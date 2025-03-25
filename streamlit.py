@@ -16,7 +16,7 @@ st.title('Venture Capital Fund Simulator')
 # Sidebar inputs
 stages = ['Pre-Seed', 'Seed', 'Series A', 'Series B']
 st.sidebar.header('Fund Parameters')
-fund_size = st.sidebar.slider('Fund Size ($MM)', 10, 500, 100, step=5)
+fund_size = st.sidebar.slider('Fund Size ($MM)', 5, 500, 100, step=5)
 initial_stage = st.sidebar.selectbox('Initial Investment Stage', stages)
 stage_index = stages.index(initial_stage)
 
@@ -27,7 +27,27 @@ stage_allocations = {}
 allocation_values = []
 remaining_alloc = 100
 
+num_simulations = st.sidebar.slider('Number of Simulations', 1, 500, 100)
+
+# Default allocation map
+default_allocation_map = {
+    'Pre-Seed': 20,
+    'Seed': 60,
+    'Series A': 10,
+    'Series B': 10
+}
+
+st.sidebar.header('Portfolio Allocation (%) per Stage')
+valid_stages = stages[stage_index:]
+stage_allocations = {}
+allocation_values = []
+remaining_alloc = 100
+
 for i, stage in enumerate(valid_stages):
+    default_value = default_allocation_map.get(stage, 0)
+    # Cap default at remaining allocation
+    default_slider_value = min(default_value, remaining_alloc)
+
     if i == len(valid_stages) - 1:
         allocation = remaining_alloc
         st.sidebar.write(f"Allocation to {stage}: {allocation}% (auto-set)")
@@ -41,7 +61,7 @@ for i, stage in enumerate(valid_stages):
                 f'Allocation to {stage} (%)',
                 min_value=0,
                 max_value=max_alloc,
-                value=min(25, max_alloc),
+                value=default_slider_value,
                 step=5
             )
         remaining_alloc -= allocation
@@ -53,16 +73,34 @@ if sum(allocation_values) != 100:
 
 st.sidebar.header('Entry Valuations and Check Sizes per Stage ($MM)')
 valuations, check_sizes = {}, {}
-for stage in valid_stages:
-    valuations[stage] = st.sidebar.slider(f'Entry Valuation Range {stage}', 1, 200, (5, 20), step=1)
-    check_sizes[stage] = st.sidebar.slider(f'Check Size Range {stage}', 0.25, 15.0, (1.0, 5.0), step=0.25)
+
+# Separate out each stage by individual Valuation
+# stages = ['Pre-Seed', 'Seed', 'Series A', 'Series B']
+
+valuations['Pre-Seed'] = st.sidebar.slider(f'Entry Valuation Range Pre-Seed', 2, 40, (4, 8), step=1)
+check_sizes['Pre-Seed'] = st.sidebar.slider(f'Check Size Range Pre-Seed', 0.25, 3.0, (1.0, 2.0), step=0.25)
+
+valuations['Seed'] = st.sidebar.slider(f'Entry Valuation Range Seed', 4, 50, (10, 15), step=1)
+check_sizes['Seed'] = st.sidebar.slider(f'Check Size Range Seed', 0.25, 10.0, (2.0, 5.0), step=0.5)
+
+valuations['Series A'] = st.sidebar.slider(f'Entry Valuation Range Series A', 20, 200, (40, 80), step=1)
+check_sizes['Series A'] = st.sidebar.slider(f'Check Size Range Series A', 1.0, 20.0, (7.0, 15.0), step=1.0)
+
+valuations['Series B'] = st.sidebar.slider(f'Entry Valuation Range Series B', 50, 400, (100, 150), step=5)
+check_sizes['Series B'] = st.sidebar.slider(f'Check Size Range Series B', 1, 40, (10, 20), step=1)
 
 st.sidebar.header('Stage Progression Probabilities (%)')
 prob_advancement = {}
 for i in range(stage_index, len(stages)-1):
-    prob_advancement[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'{stages[i]} → {stages[i+1]}', 0, 100, 50, step=5)
-prob_advancement['Series B to Series C'] = st.sidebar.slider('Series B → Series C', 0, 100, 40, step=5)
-prob_advancement['Series C to IPO'] = st.sidebar.slider('Series C → IPO', 0, 100, 20, step=5)
+    if i==0:
+        prob_advancement[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'{stages[i]} → {stages[i+1]}', 0, 100, 75, step=1)
+    elif i==1:
+        prob_advancement[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'{stages[i]} → {stages[i+1]}', 0, 100, 46, step=1)
+    elif i==2:
+        prob_advancement[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'{stages[i]} → {stages[i+1]}', 0, 100, 48, step=1)
+        
+prob_advancement['Series B to Series C'] = st.sidebar.slider('Series B → Series C', 0, 100, 43, step=1)
+prob_advancement['Series C to IPO'] = st.sidebar.slider('Series C → IPO', 0, 100, 28, step=1)
 
 st.sidebar.header('Dilution per Round (%)')
 dilution = {}
@@ -75,13 +113,20 @@ st.sidebar.header('Exit Valuations if No Further Progression ($MM)')
 exit_valuations = {}
 for stage in valid_stages + ['Series C', 'IPO']:
     if stage == 'Series C':
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 50, 300, (75, 150), step=5)
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 1000, (20, 500), step=10)
     elif stage == 'IPO':
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 100, 1000, (200, 500), step=10)
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 1000, 10000, (2000, 3000), step=100)
+    elif stage == 'Pre-Seed':
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 10, (0, 2), step=1)
+    elif stage == 'Seed':
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 20, (2, 5), step=1)
+    elif stage == 'Series A':
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 50, (5, 20), step=1)
+    elif stage == 'Series B':
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 200, (30, 100), step=1)
     else:
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 1, 200, (5, 20), step=1)
+        continue
 
-num_simulations = st.sidebar.slider('Number of Simulations', 1, 50, 20)
 
 # Simulation function
 def simulate_portfolio():
