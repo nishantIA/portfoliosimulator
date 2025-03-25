@@ -20,6 +20,10 @@ fund_size = st.sidebar.slider('Fund Size ($MM)', 5, 500, 100, step=5)
 initial_stage = st.sidebar.selectbox('Initial Investment Stage', stages)
 stage_index = stages.index(initial_stage)
 
+# Management Fee
+st.sidebar.header('Fund Management Fee')
+management_fee_pct = st.sidebar.slider('Annual Management Fee (%)', 0.0, 5.0, 2.0, step=0.1)
+
 # Robust Portfolio Allocation
 st.sidebar.header('Portfolio Allocation (%) per Stage')
 valid_stages = stages[stage_index:]
@@ -109,23 +113,36 @@ for i in range(stage_index, len(stages)-1):
 dilution['Series B to Series C'] = st.sidebar.slider('Dilution Series B → Series C', 0, 100, (15,25), step=5)
 dilution['Series C to IPO'] = st.sidebar.slider('Dilution Series C → IPO', 0, 100, (10,20), step=5)
 
-st.sidebar.header('Exit Valuations if No Further Progression ($MM)')
+st.sidebar.header('Exit Valuations and Loss Ratio ($MM)')
 exit_valuations = {}
+zero_probabilities = {}
 for stage in valid_stages + ['Series C', 'IPO']:
     if stage == 'Series C':
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 1000, (20, 500), step=10)
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 100, 1000, (20, 500), step=10)
+        zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 20, step=5)
+
     elif stage == 'IPO':
         exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 1000, 10000, (2000, 3000), step=100)
+        zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 0, step=5)
+
     elif stage == 'Pre-Seed':
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 10, (0, 2), step=1)
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 2, 20, (0, 2), step=1)
+        zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 50, step=5)
+
     elif stage == 'Seed':
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 20, (2, 5), step=1)
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 2, 40, (2, 5), step=1)
+        zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 40, step=5)
+
     elif stage == 'Series A':
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 50, (5, 20), step=1)
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 10, 100, (5, 20), step=1)
+        zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 30, step=5)
+
     elif stage == 'Series B':
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 0, 200, (30, 100), step=1)
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 20, 200, (30, 100), step=1)
+        zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 20, step=5)
     else:
         continue
+        
 
 
 # Simulation function
@@ -156,8 +173,12 @@ def simulate_portfolio():
                 else:
                     break
 
-            exit_valuation = np.random.uniform(*exit_valuations[current_stage])
-            investment.update({'Exit Stage': current_stage, 'Exit Amount': equity * exit_valuation})
+            if np.random.rand() * 100 <= zero_probabilities.get(current_stage, 0):
+                exit_amount = 0
+            else:
+                exit_valuation = np.random.uniform(*exit_valuations[current_stage])
+                exit_amount = equity * exit_valuation
+            investment.update({'Exit Stage': current_stage, 'Exit Amount': exit_amount})
             investments.append(investment)
 
     return pd.DataFrame(investments)
@@ -169,37 +190,63 @@ distributions = [res['Exit Amount'].sum() for res in all_sim_results]
 moics = [d/p for d,p in zip(distributions, paid_in)]
 irrs = [(moic ** (1/5) - 1)*100 for moic in moics]
 
+# Apply Management Fee
+fund_life_years = 10
+management_fees = [p * (management_fee_pct / 100) * fund_life_years for p in paid_in]
+adjusted_distributions = [d - fee for d, fee in zip(distributions, management_fees)]
+adjusted_moics = [max(d / p, 0) for d, p in zip(adjusted_distributions, paid_in)]
+adjusted_irrs = [(moic ** (1 / fund_life_years) - 1) * 100 for moic in adjusted_moics]
+
 # Display summary statistics
 st.subheader("Simulation Summary Statistics")
-cols = st.columns(5)
-for col, metric, val in zip(cols, ["Paid-in", "Distributed", "MOIC", "IRR %", "# Investments"],
-    [np.mean(paid_in), np.mean(distributions), np.mean(moics), np.mean(irrs), np.mean([len(r) for r in all_sim_results])]):
+# First row of metrics
+row1 = st.columns(4)
+for col, metric, val in zip(
+    row1,
+    ["Paid-in", "Distributed", "MOIC", "Net IRR %"],
+    [
+        np.mean(paid_in),
+        np.mean(distributions),
+        np.mean(moics),
+        np.mean(adjusted_irrs)
+    ]
+):
     col.metric(f"Avg. {metric}", f"{val:,.2f}")
 
-# Visualization
+# Second row of metrics
+row2 = st.columns(4)
+for col, metric, val in zip(
+    row2,
+    ["Net DPI", "# Investments", "Mgmt Fees"],
+    [
+                np.mean([ad / p for ad, p in zip(adjusted_distributions, paid_in)]),  # Net DPI after fees
+        np.mean([len(r) for r in all_sim_results]),
+        np.mean(management_fees)
+    ]
+):
+    if metric == "Mgmt Fees":
+        col.metric(f"Avg. {metric}", f"${val:,.2f}MM")
+    else:
+        col.metric(f"Avg. {metric}", f"{val:.2f}")
+
+# MOIC Distribution
 st.subheader("Distribution of Fund MOIC")
-fig, ax = plt.subplots(figsize=(8,4), dpi=120)
+fig, ax = plt.subplots(figsize=(8, 4), dpi=120)
 sns.histplot(moics, bins=15, kde=True, ax=ax)
 st.pyplot(fig)
 
-# Stacked Bar Chart of Entry vs. Exit
+# Stacked Bar Chart - Entry vs Exit per Investment
 st.subheader("Entry Capital vs. Exit Value per Investment (Sample Simulation)")
 sample_sim = all_sim_results[0].reset_index(drop=True)
 fig, ax = plt.subplots(figsize=(12, 6), dpi=120)
-
-# Compute gain/loss per investment
 exit_minus_entry = sample_sim['Exit Amount'] - sample_sim['Entry Amount']
-
 ax.bar(sample_sim.index, sample_sim['Entry Amount'], label='Initial Investment', color='skyblue')
-ax.bar(sample_sim.index, exit_minus_entry, bottom=sample_sim['Entry Amount'], 
-       label='Gain / Loss', color='seagreen', alpha=0.7)
-
+ax.bar(sample_sim.index, exit_minus_entry, bottom=sample_sim['Entry Amount'], label='Gain / Loss', color='seagreen', alpha=0.7)
 ax.set_xlabel('Investment #')
 ax.set_ylabel('Value ($MM)')
 ax.set_title('Stacked Entry Capital and Exit Value per Investment')
 ax.legend()
 st.pyplot(fig)
-
 
 # Investment Schedule
 st.subheader("Sample Simulation Investments")
