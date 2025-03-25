@@ -113,7 +113,7 @@ for i in range(stage_index, len(stages)-1):
 dilution['Series B to Series C'] = st.sidebar.slider('Dilution Series B → Series C', 0, 100, (15,25), step=5)
 dilution['Series C to IPO'] = st.sidebar.slider('Dilution Series C → IPO', 0, 100, (10,20), step=5)
 
-st.sidebar.header('Exit Valuations and Loss Ratio ($MM)')
+st.sidebar.header('Exit Valuations and Probability of Total Loss if Exit ($MM)')
 exit_valuations = {}
 zero_probabilities = {}
 for stage in valid_stages + ['Series C', 'IPO']:
