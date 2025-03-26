@@ -32,6 +32,7 @@ stage_index = stages.index(initial_stage)
 # Management Fee
 st.sidebar.header('Fund Management Fee')
 management_fee_pct = st.sidebar.slider('Annual Management Fee (%)', 0.0, 5.0, 2.0, step=0.1)
+management_fee_years = st.sidebar.slider('Years Management Fee is Charged', 1, 10, 10, step=1)
 deployment_years = st.sidebar.slider('Number of Deployment Years', 1, 10, 5, step=1)
 
 # Robust Portfolio Allocation
@@ -243,7 +244,7 @@ for sim_df in all_sim_results:
         cash_flows_by_year[exit_year] = cash_flows_by_year.get(exit_year, 0) + inv['Exit Amount']
 
     # Add annual management fees during deployment
-    for fee_year in range(deployment_years):
+    for fee_year in range(management_fee_years):
         fee = fund_size * (management_fee_pct / 100)
         cash_flows_by_year[fee_year] = cash_flows_by_year.get(fee_year, 0) - fee
 
@@ -274,7 +275,7 @@ for sim_df in all_sim_results:
 
 # Apply Management Fee
 fund_life_years = 10
-management_fees = [fund_size * (management_fee_pct / 100) * fund_life_years for _ in paid_in]
+management_fees = [fund_size * (management_fee_pct / 100) * management_fee_years for _ in paid_in]
 adjusted_distributions = [d - fee for d, fee in zip(distributions, management_fees)]
 adjusted_moics = [max(d / p, 0) for d, p in zip(adjusted_distributions, paid_in)]
 
