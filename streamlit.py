@@ -9,11 +9,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+st.set_page_config(page_title="Venture Capital Fund Simulator", page_icon="💼")
 
 # App Title
 st.markdown('<a href="https://atas.vc/"><img src="https://atas.vc/img/logo.png" width="150"></a>', unsafe_allow_html=True)
 st.title('Venture Capital Fund Simulator')
-st.set_page_config(page_title="Venture Capital Fund Simulator", page_icon="💼")
 
 st.markdown(
     "This open source model was developed by [Andrew Chan](https://www.linkedin.com/in/chandr3w/) "
