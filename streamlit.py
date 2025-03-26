@@ -303,7 +303,7 @@ for col, metric, val in zip(
     ]
 ):
     if metric == "Mgmt Fees":
-        col.metric(f"Avg. {metric}", f"${val:,.2f}MM")
+        col.metric(f"{metric}", f"${val:,.2f}MM")
     else:
         col.metric(f"{metric}", f"{val:.2f}")
 
