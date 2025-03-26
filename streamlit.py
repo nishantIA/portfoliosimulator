@@ -20,7 +20,7 @@ st.markdown(
     "from [Atas VC](https://atas.vc/)."
 )
 
-st.title('Venture Portfolio Simulator Simulator')
+st.title('VC Portfolio Simulator')
 
 # Sidebar inputs
 stages = ['Pre-Seed', 'Seed', 'Series A', 'Series B']
