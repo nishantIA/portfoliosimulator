@@ -41,7 +41,7 @@ stage_allocations = {}
 allocation_values = []
 remaining_alloc = 100
 
-num_simulations = st.sidebar.slider('Number of Simulations', 1, 10000, 500)
+num_simulations = st.sidebar.slider('Number of Simulations', 1, 1000, 100)
 
 # Default allocation map
 default_allocation_map = {
@@ -211,6 +211,7 @@ moics = [d/p for d,p in zip(distributions, paid_in)]
 
 # Calculate fund-level IRR based on simulated cash flows
 adjusted_irrs = []
+realized_years_list = []
 for sim_df in all_sim_results:
     cash_flows_by_year = {}
     sim_df['Deployment Year'] = np.random.randint(0, deployment_years, size=len(sim_df))
@@ -246,25 +247,27 @@ for sim_df in all_sim_results:
         fee = fund_size * (management_fee_pct / 100)
         cash_flows_by_year[fee_year] = cash_flows_by_year.get(fee_year, 0) - fee
 
-    # Track max exit year
-max_exit_year = max(cash_flows_by_year.keys())
+    # Re-indent IRR calculation inside the simulation loop
+    max_exit_year = max(cash_flows_by_year.keys())
+    years = range(0, max_exit_year + 1)
+    cash_flows = [cash_flows_by_year.get(y, 0) for y in years]
 
-# Convert cash flow dict to ordered list up to max exit year
-years = range(0, max_exit_year + 1)
-cash_flows = [cash_flows_by_year.get(y, 0) for y in years]
+    # Use the exact cash_flow_schedule logic for IRR calculation
+    cash_flow_schedule = pd.DataFrame(sorted(cash_flows_by_year.items()), columns=["Year", "Net Cash Flow"])
+    cash_flow_list = cash_flow_schedule['Net Cash Flow'].tolist()
 
-# Check for no positive cash flow to avoid npf.irr NaN
-if all(c <= 0 for c in cash_flows[1:]):
-    fund_irr = 0
-else:
-    fund_irr = npf.irr(cash_flows) * 100
-
-    try:
-        fund_irr = npf.irr(cash_flows) * 100
-    except:
+    if all(c <= 0 for c in cash_flow_list[1:]):
         fund_irr = 0
+    else:
+        try:
+            irr_val = npf.irr(cash_flow_list)
+            fund_irr = 0 if (irr_val is None or np.isnan(irr_val)) else irr_val * 100
+        except:
+            fund_irr = 0
 
     adjusted_irrs.append(fund_irr)
+    realized_years_list.append(max_exit_year)
+
 
 
 
