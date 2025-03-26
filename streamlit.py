@@ -17,7 +17,7 @@ st.set_page_config(page_title="VC Fund Simulator", page_icon="https://atas.vc/im
 st.image('https://atas.vc/img/logo.png', width=200)
 st.markdown(
     "This open source model was developed by [Andrew Chan](https://www.linkedin.com/in/chandr3w/), "
-    "the General Partner of [Atas VC](https://atas.vc/)."
+    "from [Atas VC](https://atas.vc/)."
 )
 
 st.title('Atas VC Fund Simulator')
@@ -108,10 +108,10 @@ prob_advancement = {}
 years_to_next = {}
 for i in range(stage_index, len(stages)-1):
     if i==0:
-        prob_advancement[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'{stages[i]} → {stages[i+1]}', 0, 100, 60, step=1)
+        prob_advancement[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'{stages[i]} → {stages[i+1]}', 0, 100, 50, step=1)
         years_to_next[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'Years from {stages[i]} to {stages[i+1]}', 0, 10, (1,2), step=1)
     elif i==1:
-        prob_advancement[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'{stages[i]} → {stages[i+1]}', 0, 100, 50, step=1)
+        prob_advancement[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'{stages[i]} → {stages[i+1]}', 0, 100, 33, step=1)
         years_to_next[stages[i]+' to '+stages[i+1]] = st.sidebar.slider(f'Years from {stages[i]} to {stages[i+1]}', 0, 10, (1,3), step=1)
         
     elif i==2:
