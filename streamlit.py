@@ -278,10 +278,6 @@ management_fees = [fund_size * (management_fee_pct / 100) * fund_life_years for 
 adjusted_distributions = [d - fee for d, fee in zip(distributions, management_fees)]
 adjusted_moics = [max(d / p, 0) for d, p in zip(adjusted_distributions, paid_in)]
 
-# Display Cash Flow Schedule from last IRR calculation
-st.subheader("Sample Cash Flow Schedule by Year (Last Simulation)")
-cash_flow_schedule = pd.DataFrame(sorted(cash_flows_by_year.items()), columns=["Year", "Net Cash Flow"])
-st.dataframe(cash_flow_schedule)
 
 # Display summary statistics
 st.subheader("Simulation Summary Statistics")
