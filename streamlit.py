@@ -45,10 +45,10 @@ num_simulations = st.sidebar.slider('Number of Simulations', 1, 500, 100)
 
 # Default allocation map
 default_allocation_map = {
-    'Pre-Seed': 60,
-    'Seed': 40,
-    'Series A': 0,
-    'Series B': 0
+    'Pre-Seed': 20,
+    'Seed': 60,
+    'Series A': 10,
+    'Series B': 10
 }
 
 st.sidebar.header('Portfolio Allocation (%) per Stage')
@@ -92,16 +92,16 @@ valuations, check_sizes = {}, {}
 # stages = ['Pre-Seed', 'Seed', 'Series A', 'Series B']
 
 valuations['Pre-Seed'] = st.sidebar.slider(f'Entry Valuation Range Pre-Seed', 2, 40, (3, 6), step=1)
-check_sizes['Pre-Seed'] = st.sidebar.slider(f'Check Size Range Pre-Seed', 0.25, 3.0, (.25, .5), step=0.25)
+check_sizes['Pre-Seed'] = st.sidebar.slider(f'Check Size Range Pre-Seed', 0.25, 3.0, (1.0, 1.5), step=0.25)
 
 valuations['Seed'] = st.sidebar.slider(f'Entry Valuation Range Seed', 4, 50, (5, 15), step=1)
-check_sizes['Seed'] = st.sidebar.slider(f'Check Size Range Seed', 0.25, 10.0, (0.5, 0.8), step=0.5)
+check_sizes['Seed'] = st.sidebar.slider(f'Check Size Range Seed', 0.25, 10.0, (2.0, 5.0), step=0.5)
 
 valuations['Series A'] = st.sidebar.slider(f'Entry Valuation Range Series A', 20, 200, (40, 80), step=1)
-check_sizes['Series A'] = st.sidebar.slider(f'Check Size Range Series A', 1.0, 20.0, (7.0, 15.0), step=1.0)
+check_sizes['Series A'] = st.sidebar.slider(f'Check Size Range Series A', 1.0, 20.0, (5.0, 10.0), step=1.0)
 
 valuations['Series B'] = st.sidebar.slider(f'Entry Valuation Range Series B', 50, 400, (100, 150), step=5)
-check_sizes['Series B'] = st.sidebar.slider(f'Check Size Range Series B', 1, 40, (10, 20), step=1)
+check_sizes['Series B'] = st.sidebar.slider(f'Check Size Range Series B', 1, 40, (5, 10), step=1)
 
 st.sidebar.header('Stage Progression Probabilities (%)')
 prob_advancement = {}
