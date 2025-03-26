@@ -275,16 +275,10 @@ management_fees = [fund_size * (management_fee_pct / 100) * fund_life_years for 
 adjusted_distributions = [d - fee for d, fee in zip(distributions, management_fees)]
 adjusted_moics = [max(d / p, 0) for d, p in zip(adjusted_distributions, paid_in)]
 
-# Cash Flow Schedule by Year (Sample Simulation)
-st.subheader("Cash Flow Schedule by Year (Sample Simulation)")
-sample_cash_flow = {}
-for _, inv in sample_sim.iterrows():
-    deploy_year = np.random.randint(0, deployment_years)
-    sample_cash_flow[deploy_year] = sample_cash_flow.get(deploy_year, 0) - inv['Entry Amount']
-    sample_cash_flow[deploy_year + 5] = sample_cash_flow.get(deploy_year + 5, 0) + inv['Exit Amount']
-
-cash_flow_df = pd.DataFrame(sorted(sample_cash_flow.items()), columns=["Year", "Net Cash Flow"])
-st.dataframe(cash_flow_df)
+# Display Cash Flow Schedule from last IRR calculation
+st.subheader("Sample Cash Flow Schedule by Year (Last Simulation)")
+cash_flow_schedule = pd.DataFrame(sorted(cash_flows_by_year.items()), columns=["Year", "Net Cash Flow"])
+st.dataframe(cash_flow_schedule)
 
 # Display summary statistics
 st.subheader("Simulation Summary Statistics")
