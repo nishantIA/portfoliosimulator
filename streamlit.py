@@ -25,7 +25,7 @@ st.title('Atas VC Fund Simulator')
 # Sidebar inputs
 stages = ['Pre-Seed', 'Seed', 'Series A', 'Series B']
 st.sidebar.header('Fund Parameters')
-fund_size = st.sidebar.slider('Fund Size ($MM)', 5, 2000, 500, step=5)
+fund_size = st.sidebar.slider('Fund Size ($MM)', 5, 500, 100, step=5)
 initial_stage = st.sidebar.selectbox('Initial Investment Stage', stages)
 stage_index = stages.index(initial_stage)
 
@@ -41,7 +41,7 @@ stage_allocations = {}
 allocation_values = []
 remaining_alloc = 100
 
-num_simulations = st.sidebar.slider('Number of Simulations', 1, 500, 100)
+num_simulations = st.sidebar.slider('Number of Simulations', 1, 10000, 500)
 
 # Default allocation map
 default_allocation_map = {
