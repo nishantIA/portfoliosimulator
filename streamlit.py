@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # App Title
-st.markdown('<a href="https://atas.vc/"><img src="https://atas.vc/img/logo.png" width="100"></a>', unsafe_allow_html=True)
+st.markdown('<a href="https://atas.vc/"><img src="https://atas.vc/img/logo.png" width="200"></a>', unsafe_allow_html=True)
 
 st.title('Venture Capital Fund Simulator')
 st.markdown(
