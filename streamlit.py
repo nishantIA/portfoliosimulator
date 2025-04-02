@@ -95,7 +95,7 @@ valuations, check_sizes = {}, {}
 valuations['Pre-Seed'] = st.sidebar.slider(f'Entry Valuation Range Pre-Seed', 2, 40, (3, 6), step=1)
 check_sizes['Pre-Seed'] = st.sidebar.slider(f'Check Size Range Pre-Seed', 0.25, 3.0, (1.0, 1.5), step=0.25)
 
-valuations['Seed'] = st.sidebar.slider(f'Entry Valuation Range Seed', 4, 50, (5, 15), step=1)
+valuations['Seed'] = st.sidebar.slider(f'Entry Valuation Range Seed', 4, 50, (8, 15), step=1)
 check_sizes['Seed'] = st.sidebar.slider(f'Check Size Range Seed', 0.25, 10.0, (2.0, 5.0), step=0.5)
 
 valuations['Series A'] = st.sidebar.slider(f'Entry Valuation Range Series A', 20, 200, (40, 80), step=1)
@@ -144,7 +144,7 @@ for stage in valid_stages + ['Series C', 'IPO']:
         exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 2, 20, (4, 10), step=1)
         zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 30, step=5)
     elif stage == 'Seed':
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 2, 40, (10, 15), step=1)
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 2, 40, (5, 10), step=1)
         zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 30, step=5)
 
     elif stage == 'Series A':
@@ -159,7 +159,7 @@ for stage in valid_stages + ['Series C', 'IPO']:
         zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 20, step=5)
 
     elif stage == 'IPO':
-        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 1000, 10000, (2000, 4000), step=100)
+        exit_valuations[stage] = st.sidebar.slider(f'Exit Valuation at {stage}', 1000, 10000, (1000, 2000), step=100)
         zero_probabilities[stage] = st.sidebar.slider(f'Probability of Total Loss at {stage} (%)', 0, 100, 0, step=5)
     else:
         continue
