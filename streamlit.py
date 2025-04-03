@@ -321,15 +321,30 @@ st.pyplot(fig)
 # Stacked Bar Chart - Entry vs Exit per Investment
 st.subheader("Entry Capital vs. Exit Value per Investment (Sample Simulation)")
 sample_sim = all_sim_results[0].reset_index(drop=True)
+
 fig, ax = plt.subplots(figsize=(12, 6), dpi=120)
+
+# Compute gain/loss
 exit_minus_entry = sample_sim['Exit Amount'] - sample_sim['Entry Amount']
+gains = exit_minus_entry.clip(lower=0)
+losses = exit_minus_entry.clip(upper=0)
+
+# Plot entry amount
 ax.bar(sample_sim.index, sample_sim['Entry Amount'], label='Initial Investment', color='skyblue')
-ax.bar(sample_sim.index, exit_minus_entry, bottom=sample_sim['Entry Amount'], label='Gain / Loss', color='seagreen', alpha=0.7)
+
+# Plot gains in green
+ax.bar(sample_sim.index, gains, bottom=sample_sim['Entry Amount'], label='Gain', color='seagreen', alpha=0.7)
+
+# Plot losses in red
+ax.bar(sample_sim.index, losses, bottom=sample_sim['Entry Amount'], label='Loss', color='crimson', alpha=0.7)
+
 ax.set_xlabel('Investment #')
 ax.set_ylabel('Value ($MM)')
 ax.set_title('Stacked Entry Capital and Exit Value per Investment')
 ax.legend()
+
 st.pyplot(fig)
+
 
 # Investment Schedule
 st.subheader("Sample Simulation Investments")
